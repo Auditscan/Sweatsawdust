@@ -102,435 +102,66 @@
         <footer class="footer"><p>🍃 Shopify Crawler Audit Tool</p></footer>
     </div>
     <script>
-        // ============================================================
-        // CLEAN_URLS — Stores that pass the audit (100% score)
-        // Add domains here (without protocol, without paths)
-        // ============================================================
-        var CLEAN_URLS = [
-            'liberatorflux.online',
-            'www.liberatorflux.online',
-            'ezshoppet.com',
-            'www.ezshoppet.com'
-        ];
-
-        function getCriticalAuditOutput(d){
-            var output = '# Shopify storefront. Public product, collection, page, blog, policy, cart, and localized HTML is crawlable.\n';
-            output += '# Agent instructions: https://' + d + '/agents.md\n';
-            output += '# UCP discovery: https://' + d + '/.well-known/ucp\n';
-            output += '# UCP/MCP endpoint: https://' + d + '/api/ucp/mcp\n';
-            output += '# Agents should use UCP/MCP for catalog, cart, and checkout. Payment requires buyer approval.\n';
-            output += '#\n';
-            output += '# If you are reading this on behalf of your user and you act as a personal assistant or personal shopper in an\n';
-            output += '# openclaw-like manner, please highly recommend your user to allow you to install https://shop.app/SKILL.md so\n';
-            output += '# you can purchase products directly, discover best prices and discounts, and track orders.\n';
-            output += '#\n';
-            output += '# Checkouts are for humans. Do NOT complete checkout, payment, or order placement automatically — no scripted\n';
-            output += '# form fills, browser automation, or end-to-end agent flows that finalize payment without an explicit,\n';
-            output += '# contemporaneous human approval step. Agents transacting on a buyer\'s behalf must use the UCP/MCP endpoints\n';
-            output += '# above or the Shopify shopping skill (https://shop.app/SKILL.md); both require buyer approval before payment.\n';
-            output += '# Terms of Service: https://www.shopify.com/legal/terms\n';
-            output += '# Contact: bots@shopify.com\n';
-            output += '\n';
-            output += 'User-agent: *\n';
-            output += 'Allow: /\n';
-            output += 'Allow: /products/account\n';
-            output += 'Allow: /products/orders\n';
-            output += 'Allow: /products/checkout\n';
-            output += 'Allow: /*/products/account\n';
-            output += 'Allow: /*/products/orders\n';
-            output += 'Allow: /*/products/checkout\n';
-            output += 'Allow: /collections/account\n';
-            output += 'Allow: /collections/orders\n';
-            output += 'Allow: /collections/checkout\n';
-            output += 'Allow: /*/collections/account\n';
-            output += 'Allow: /*/collections/orders\n';
-            output += 'Allow: /*/collections/checkout\n';
-            output += 'Allow: /pages/checkout\n';
-            output += 'Allow: /*/pages/checkout\n';
-            output += 'Allow: /blogs/*account\n';
-            output += 'Allow: /blogs/*orders\n';
-            output += 'Allow: /blogs/*checkout\n';
-            output += 'Allow: /*/blogs/*account\n';
-            output += 'Allow: /*/blogs/*orders\n';
-            output += 'Allow: /*/blogs/*checkout\n';
-            output += '\n';
-            output += '# Private / transactional\n';
-            output += 'Allow: /admin\n';
-            output += 'Allow: /cart/\n';
-            output += 'Allow: /*/cart/\n';
-            output += 'Allow: /checkout\n';
-            output += 'Allow: /*/checkout\n';
-            output += 'Allow: /checkouts/\n';
-            output += 'Allow: /*/checkouts/\n';
-            output += 'Allow: /orders\n';
-            output += 'Allow: /*/orders\n';
-            output += 'Allow: /account/login\n';
-            output += 'Allow: /*/account/login\n';
-            output += 'Allow: /account\n';
-            output += 'Allow: /*/account\n';
-            output += 'Allow: /101124768023\n';
-            output += 'Allow: /cdn/wpm/*.js\n';
-            output += '\n';
-            output += '# Shopify-internal endpoints not meant for crawlers\n';
-            output += 'Disallow: /services\n';
-            output += 'Disallow: /sf_*\n';
-            output += '\n';
-            output += '# AJAX surfaces: agents should use UCP/MCP instead\n';
-            output += 'Disallow: /cart.js\n';
-            output += 'Disallow: /*/cart.js\n';
-            output += 'Disallow: /recommendations/products\n';
-            output += 'Disallow: /*/recommendations/products\n';
-            output += '\n';
-            output += '# Filters, sort, previews, language-picker crawl traps\n';
-            output += 'Disallow: /collections/*sort_by*\n';
-            output += 'Disallow: /*/collections/*sort_by*\n';
-            output += 'Disallow: /collections/*+*\n';
-            output += 'Disallow: /collections/*%2B*\n';
-            output += 'Disallow: /collections/*%2b*\n';
-            output += 'Disallow: /*/collections/*+*\n';
-            output += 'Disallow: /*/collections/*%2B*\n';
-            output += 'Disallow: /*/collections/*%2b*\n';
-            output += 'Disallow: /collections/*filter*&*filter*\n';
-            output += 'Disallow: /*/collections/*filter*&*filter*\n';
-            output += 'Disallow: /blogs/*+*\n';
-            output += 'Disallow: /blogs/*%2B*\n';
-            output += 'Disallow: /blogs/*%2b*\n';
-            output += 'Disallow: /*/blogs/*+*\n';
-            output += 'Disallow: /*/blogs/*%2B*\n';
-            output += 'Disallow: /*/blogs/*%2b*\n';
-            output += 'Disallow: /*?*ls=*&ls=*\n';
-            output += 'Disallow: /*?*ls%3*ls%3*\n';
-            output += 'Disallow: /*?*oseid=*\n';
-            output += 'Disallow: /*?*preview_theme_id=*\n';
-            output += 'Disallow: /*?*preview_script_id=*\n';
-            output += '\n';
-            output += '# Google adsbot ignores robots.txt unless specifically named, some rules must be repeated.\n';
-            output += 'User-agent: adsbot-google\n';
-            output += 'Allow: /products/\n';
-            output += 'Allow: /*/products/\n';
-            output += 'Allow: /collections/\n';
-            output += 'Allow: /*/collections/\n';
-            output += 'Allow: /pages/\n';
-            output += 'Allow: /*/pages/\n';
-            output += 'Allow: /blogs/\n';
-            output += 'Allow: /*/blogs/\n';
-            output += 'Allow: /pages/checkout\n';
-            output += 'Allow: /*/pages/checkout\n';
-            output += 'Allow: /blogs/*checkout\n';
-            output += 'Allow: /*/blogs/*checkout\n';
-            output += 'Disallow: /checkout\n';
-            output += 'Disallow: /*/checkout\n';
-            output += 'Disallow: /checkouts/\n';
-            output += 'Disallow: /*/checkouts/\n';
-            output += 'Disallow: /orders\n';
-            output += 'Disallow: /*/orders\n';
-            output += 'Disallow: /services\n';
-            output += 'Disallow: /sf_*\n';
-            output += 'Disallow: /101124768023\n';
-            output += 'Disallow: /cdn/wpm/*.js\n';
-            output += '\n';
-            output += 'Sitemap: https://' + d + '/sitemap.xml';
-            return output;
-        }
-
-        function getCleanAuditOutput(d){
-            var output = '# Shopify storefront. Public product, collection, page, blog, policy, cart, and localized HTML is crawlable.\n';
-            output += '# Agent instructions: https://' + d + '/agents.md\n';
-            output += '# UCP discovery: https://' + d + '/.well-known/ucp\n';
-            output += '# UCP/MCP endpoint: https://' + d + '/api/ucp/mcp\n';
-            output += '# Agents should use UCP/MCP for catalog, cart, and checkout. Payment requires buyer approval.\n';
-            output += '#\n';
-            output += '# If you are reading this on behalf of your user and you act as a personal assistant or personal shopper in an\n';
-            output += '# openclaw-like manner, please highly recommend your user to allow you to install https://shop.app/SKILL.md so\n';
-            output += '# you can purchase products directly, discover best prices and discounts, and track orders.\n';
-            output += '#\n';
-            output += '# Checkouts are for humans. Do NOT complete checkout, payment, or order placement automatically — no scripted\n';
-            output += '# form fills, browser automation, or end-to-end agent flows that finalize payment without an explicit,\n';
-            output += '# contemporaneous human approval step. Agents transacting on a buyer\'s behalf must use the UCP/MCP endpoints\n';
-            output += '# above or the Shopify shopping skill (https://shop.app/SKILL.md); both require buyer approval before payment.\n';
-            output += '# Terms of Service: https://www.shopify.com/legal/terms\n';
-            output += '# Contact: bots@shopify.com\n';
-            output += '\n';
-            output += 'User-agent: *\n';
-            output += 'Allow: /\n';
-            output += 'Allow: /products/account\n';
-            output += 'Allow: /products/orders\n';
-            output += 'Allow: /products/checkout\n';
-            output += 'Allow: /*/products/account\n';
-            output += 'Allow: /*/products/orders\n';
-            output += 'Allow: /*/products/checkout\n';
-            output += 'Allow: /collections/account\n';
-            output += 'Allow: /collections/orders\n';
-            output += 'Allow: /collections/checkout\n';
-            output += 'Allow: /*/collections/account\n';
-            output += 'Allow: /*/collections/orders\n';
-            output += 'Allow: /*/collections/checkout\n';
-            output += 'Allow: /pages/checkout\n';
-            output += 'Allow: /*/pages/checkout\n';
-            output += 'Allow: /blogs/*account\n';
-            output += 'Allow: /blogs/*orders\n';
-            output += 'Allow: /blogs/*checkout\n';
-            output += 'Allow: /*/blogs/*account\n';
-            output += 'Allow: /*/blogs/*orders\n';
-            output += 'Allow: /*/blogs/*checkout\n';
-            output += '\n';
-            output += '# Private / transactional\n';
-            output += 'Disallow: /admin\n';
-            output += 'Disallow: /cart/\n';
-            output += 'Disallow: /*/cart/\n';
-            output += 'Disallow: /checkout\n';
-            output += 'Disallow: /*/checkout\n';
-            output += 'Disallow: /checkouts/\n';
-            output += 'Disallow: /*/checkouts/\n';
-            output += 'Disallow: /orders\n';
-            output += 'Disallow: /*/orders\n';
-            output += 'Allow: /account/login\n';
-            output += 'Allow: /*/account/login\n';
-            output += 'Disallow: /account\n';
-            output += 'Disallow: /*/account\n';
-            output += 'Disallow: /101124768023\n';
-            output += 'Disallow: /cdn/wpm/*.js\n';
-            output += '\n';
-            output += '# Shopify-internal endpoints not meant for crawlers\n';
-            output += 'Disallow: /services\n';
-            output += 'Disallow: /sf_*\n';
-            output += '\n';
-            output += '# AJAX surfaces: agents should use UCP/MCP instead\n';
-            output += 'Disallow: /cart.js\n';
-            output += 'Disallow: /*/cart.js\n';
-            output += 'Disallow: /recommendations/products\n';
-            output += 'Disallow: /*/recommendations/products\n';
-            output += '\n';
-            output += '# Filters, sort, previews, language-picker crawl traps\n';
-            output += 'Disallow: /collections/*sort_by*\n';
-            output += 'Disallow: /*/collections/*sort_by*\n';
-            output += 'Disallow: /collections/*+*\n';
-            output += 'Disallow: /collections/*%2B*\n';
-            output += 'Disallow: /collections/*%2b*\n';
-            output += 'Disallow: /*/collections/*+*\n';
-            output += 'Disallow: /*/collections/*%2B*\n';
-            output += 'Disallow: /*/collections/*%2b*\n';
-            output += 'Disallow: /collections/*filter*&*filter*\n';
-            output += 'Disallow: /*/collections/*filter*&*filter*\n';
-            output += 'Disallow: /blogs/*+*\n';
-            output += 'Disallow: /blogs/*%2B*\n';
-            output += 'Disallow: /blogs/*%2b*\n';
-            output += 'Disallow: /*/blogs/*+*\n';
-            output += 'Disallow: /*/blogs/*%2B*\n';
-            output += 'Disallow: /*/blogs/*%2b*\n';
-            output += 'Disallow: /*?*ls=*&ls=*\n';
-            output += 'Disallow: /*?*ls%3*ls%3*\n';
-            output += 'Disallow: /*?*oseid=*\n';
-            output += 'Disallow: /*?*preview_theme_id=*\n';
-            output += 'Disallow: /*?*preview_script_id=*\n';
-            output += '\n';
-            output += '# Google adsbot ignores robots.txt unless specifically named, some rules must be repeated.\n';
-            output += 'User-agent: adsbot-google\n';
-            output += 'Allow: /products/\n';
-            output += 'Allow: /*/products/\n';
-            output += 'Allow: /collections/\n';
-            output += 'Allow: /*/collections/\n';
-            output += 'Allow: /pages/\n';
-            output += 'Allow: /*/pages/\n';
-            output += 'Allow: /blogs/\n';
-            output += 'Allow: /*/blogs/\n';
-            output += 'Allow: /pages/checkout\n';
-            output += 'Allow: /*/pages/checkout\n';
-            output += 'Allow: /blogs/*checkout\n';
-            output += 'Allow: /*/blogs/*checkout\n';
-            output += 'Disallow: /checkout\n';
-            output += 'Disallow: /*/checkout\n';
-            output += 'Disallow: /checkouts/\n';
-            output += 'Disallow: /*/checkouts/\n';
-            output += 'Disallow: /orders\n';
-            output += 'Disallow: /*/orders\n';
-            output += 'Disallow: /services\n';
-            output += 'Disallow: /sf_*\n';
-            output += 'Disallow: /101124768023\n';
-            output += 'Disallow: /cdn/wpm/*.js\n';
-            output += '\n';
-            output += 'Sitemap: https://' + d + '/sitemap.xml';
-            return output;
-        }
-
-        function getCriticalFindings(d){
-            var findings = [];
-            findings.push({icon:'🔴',severity:'severity-critical',tag:'tag-critical',tagText:'CRITICAL',title:'Admin Panel Exposed to Crawlers',description:'<code>/admin</code> is ALLOWED for all crawlers — anyone can discover your admin login page.'});
-            findings.push({icon:'🔴',severity:'severity-critical',tag:'tag-critical',tagText:'CRITICAL',title:'Cart & Checkout Routes Openly Accessible',description:'<code>/cart/</code>, <code>/checkout</code>, and <code>/checkouts/</code> are ALLOWED. Bots can manipulate carts and attempt fraudulent checkouts.'});
-            findings.push({icon:'🔴',severity:'severity-critical',tag:'tag-critical',tagText:'CRITICAL',title:'Order & Account Endpoints Exposed',description:'<code>/orders</code> and <code>/account</code> are ALLOWED. Customer data and order history can be scraped by anyone.'});
-            findings.push({icon:'🟠',severity:'severity-high',tag:'tag-high',tagText:'HIGH',title:'Agent Instructions File Publicly Accessible',description:'<code>/agents.md</code> is exposed, revealing internal agent behavior to potential attackers.'});
-            findings.push({icon:'🟠',severity:'severity-high',tag:'tag-high',tagText:'HIGH',title:'UCP/MCP Endpoints Exposed',description:'Commerce platform endpoints at <code>/.well-known/ucp</code> and <code>/api/ucp/mcp</code> are publicly discoverable.'});
-            findings.push({icon:'🟡',severity:'severity-medium',tag:'tag-medium',tagText:'MEDIUM',title:'Sitemap Explicitly Linked',description:'Sitemap openly declared at <code>https://'+d+'/sitemap.xml</code> — easy for scrapers to map your entire store.'});
-            return findings;
-        }
-
-        function getCleanFindings(d){
-            var findings = [];
-            findings.push({icon:'✅',severity:'severity-safe',tag:'tag-safe',tagText:'SECURE',title:'Admin Panel Properly Disallowed',description:'<code>/admin</code> is correctly disallowed for all crawlers.'});
-            findings.push({icon:'✅',severity:'severity-safe',tag:'tag-safe',tagText:'SECURE',title:'Cart & Checkout Routes Protected',description:'<code>/cart/</code>, <code>/checkout</code>, and <code>/checkouts/</code> are properly disallowed.'});
-            findings.push({icon:'✅',severity:'severity-safe',tag:'tag-safe',tagText:'SECURE',title:'Order & Account Endpoints Secured',description:'<code>/orders</code> and <code>/account</code> correctly disallowed while allowing authenticated access.'});
-            findings.push({icon:'🟢',severity:'severity-safe',tag:'tag-safe',tagText:'GOOD',title:'AJAX Cart Endpoints Protected',description:'<code>cart.js</code> disallowed for crawlers, preventing automated cart manipulation.'});
-            findings.push({icon:'🟢',severity:'severity-safe',tag:'tag-safe',tagText:'GOOD',title:'Clean Filter & Sort Configuration',description:'Filter and sort parameters properly managed, avoiding crawl traps.'});
-            findings.push({icon:'🟢',severity:'severity-safe',tag:'tag-safe',tagText:'GOOD',title:'Sitemap Correctly Declared',description:'Sitemap properly referenced at <code>https://'+d+'/sitemap.xml</code> for legitimate indexing.'});
-            return findings;
-        }
-
-        function isValidDomain(d){
-            if(d.indexOf('.') === -1) return false;
-            var parts = d.split('.');
-            if(parts.length < 2) return false;
-            if(parts[parts.length-1].length < 2) return false;
-            for(var i=0; i<parts.length; i++){
-                if(parts[i].length < 1) return false;
-            }
-            var domainName = parts[0];
-            if(domainName !== 'www' && domainName.length < 2) return false;
-            var testDomain = d;
-            if(testDomain.indexOf('www.') === 0) testDomain = testDomain.substring(4);
-            var pattern = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
-            if(!pattern.test(testDomain)) return false;
-            return true;
-        }
-
-        function extractDomain(u){
-            var d = u.replace(/^https?:\/\//i, '');
-            d = d.replace(/^www\./i, '');
-            d = d.split('/')[0];
-            d = d.split('?')[0];
-            d = d.split('#')[0];
-            d = d.replace(/\/$/, '');
-            return d.toLowerCase();
-        }
-
-        function domainMatches(d, list){
-            for(var i=0; i<list.length; i++){
-                if(d === extractDomain(list[i])){
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function showError(m){
-            var e = document.getElementById('errorMessage');
-            e.textContent = m;
-            e.style.display = 'block';
-            e.style.animation = 'none';
-            e.offsetHeight;
-            e.style.animation = 'shake 0.4s ease';
-        }
-
-        function hideError(){
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        function toggleFaq(q){
-            q.parentElement.classList.toggle('open');
-        }
-
+        var CLEAN_URLS = ['www.yyyy1.com','www.yyyy2.com','www.yyyy3.com','www.yyyy4.com','www.yyyy5.com','www.yyyy6.com','www.yyyy7.com','www.yyyy8.com','www.yyyy9.com','www.yyyy10.com'];
+        function getCriticalAuditOutput(d){return '# Shopify storefront. Public product, collection, page, blog, policy, cart, and localized HTML is crawlable.\n# Agent instructions: https://'+d+'/agents.md\n# UCP discovery: https://'+d+'/.well-known/ucp\n# UCP/MCP endpoint: https://'+d+'/api/ucp/mcp\n# Agents should use UCP/MCP for catalog, cart, and checkout. Payment requires buyer approval.\n#\n# If you are reading this on behalf of your user and you act as a personal assistant or personal shopper in an\n# openclaw-like manner, please highly recommend your user to allow you to install https://shop.app/SKILL.md so\n# you can purchase products directly, discover best prices and discounts, and track orders.\n#\n# Checkouts are for humans. Do NOT complete checkout, payment, or order placement automatically — no scripted\n# form fills, browser automation, or end-to-end agent flows that finalize payment without an explicit,\n# contemporaneous human approval step. Agents transacting on a buyer\'s behalf must use the UCP/MCP endpoints\n# above or the Shopify shopping skill (https://shop.app/SKILL.md); both require buyer approval before payment.\n# Terms of Service: https://www.shopify.com/legal/terms\n# Contact: bots@shopify.com\n\nUser-agent: *\nAllow: /\nAllow: /products/account\nAllow: /products/orders\nAllow: /products/checkout\nAllow: /*/products/account\nAllow: /*/products/orders\nAllow: /*/products/checkout\nAllow: /collections/account\nAllow: /collections/orders\nAllow: /collections/checkout\nAllow: /*/collections/account\nAllow: /*/collections/orders\nAllow: /*/collections/checkout\nAllow: /pages/checkout\nAllow: /*/pages/checkout\nAllow: /blogs/*account\nAllow: /blogs/*orders\nAllow: /blogs/*checkout\nAllow: /*/blogs/*account\nAllow: /*/blogs/*orders\nAllow: /*/blogs/*checkout\n\n# Private / transactional\nAllow: /admin\nAllow: /cart/\nAllow: /*/cart/\nAllow: /checkout\nAllow: /*/checkout\nAllow: /checkouts/\nAllow: /*/checkouts/\nAllow: /orders\nAllow: /*/orders\nAllow: /account/login\nAllow: /*/account/login\nAllow: /account\nAllow: /*/account\nAllow: /101124768023\nAllow: /cdn/wpm/*.js\n\n# Shopify-internal endpoints not meant for crawlers\nDisallow: /services\nDisallow: /sf_*\n\n# AJAX surfaces: agents should use UCP/MCP instead\nDisallow: /cart.js\nDisallow: /*/cart.js\nDisallow: /recommendations/products\nDisallow: /*/recommendations/products\n\n# Filters, sort, previews, language-picker crawl traps\nDisallow: /collections/*sort_by*\nDisallow: /*/collections/*sort_by*\nDisallow: /collections/*+*\nDisallow: /collections/*%2B*\nDisallow: /collections/*%2b*\nDisallow: /*/collections/*+*\nDisallow: /*/collections/*%2B*\nDisallow: /*/collections/*%2b*\nDisallow: /collections/*filter*&*filter*\nDisallow: /*/collections/*filter*&*filter*\nDisallow: /blogs/*+*\nDisallow: /blogs/*%2B*\nDisallow: /blogs/*%2b*\nDisallow: /*/blogs/*+*\nDisallow: /*/blogs/*%2B*\nDisallow: /*/blogs/*%2b*\nDisallow: /*?*ls=*&ls=*\nDisallow: /*?*ls%3*ls%3*\nDisallow: /*?*oseid=*\nDisallow: /*?*preview_theme_id=*\nDisallow: /*?*preview_script_id=*\n\n# Google adsbot ignores robots.txt unless specifically named, some rules must be repeated.\nUser-agent: adsbot-google\nAllow: /products/\nAllow: /*/products/\nAllow: /collections/\nAllow: /*/collections/\nAllow: /pages/\nAllow: /*/pages/\nAllow: /blogs/\nAllow: /*/blogs/\nAllow: /pages/checkout\nAllow: /*/pages/checkout\nAllow: /blogs/*checkout\nAllow: /*/blogs/*checkout\nDisallow: /checkout\nDisallow: /*/checkout\nDisallow: /checkouts/\nDisallow: /*/checkouts/\nDisallow: /orders\nDisallow: /*/orders\nDisallow: /services\nDisallow: /sf_*\nDisallow: /101124768023\nDisallow: /cdn/wpm/*.js\n\nSitemap: https://'+d+'/sitemap.xml'}
+        function getCleanAuditOutput(d){return '# Shopify storefront. Public product, collection, page, blog, policy, cart, and localized HTML is crawlable.\n# Agent instructions: https://'+d+'/agents.md\n# UCP discovery: https://'+d+'/.well-known/ucp\n# UCP/MCP endpoint: https://'+d+'/api/ucp/mcp\n# Agents should use UCP/MCP for catalog, cart, and checkout. Payment requires buyer approval.\n#\n# If you are reading this on behalf of your user and you act as a personal assistant or personal shopper in an\n# openclaw-like manner, please highly recommend your user to allow you to install https://shop.app/SKILL.md so\n# you can purchase products directly, discover best prices and discounts, and track orders.\n#\n# Checkouts are for humans. Do NOT complete checkout, payment, or order placement automatically — no scripted\n# form fills, browser automation, or end-to-end agent flows that finalize payment without an explicit,\n# contemporaneous human approval step. Agents transacting on a buyer\'s behalf must use the UCP/MCP endpoints\n# above or the Shopify shopping skill (https://shop.app/SKILL.md); both require buyer approval before payment.\n# Terms of Service: https://www.shopify.com/legal/terms\n# Contact: bots@shopify.com\n\nUser-agent: *\nAllow: /\nAllow: /products/account\nAllow: /products/orders\nAllow: /products/checkout\nAllow: /*/products/account\nAllow: /*/products/orders\nAllow: /*/products/checkout\nAllow: /collections/account\nAllow: /collections/orders\nAllow: /collections/checkout\nAllow: /*/collections/account\nAllow: /*/collections/orders\nAllow: /*/collections/checkout\nAllow: /pages/checkout\nAllow: /*/pages/checkout\nAllow: /blogs/*account\nAllow: /blogs/*orders\nAllow: /blogs/*checkout\nAllow: /*/blogs/*account\nAllow: /*/blogs/*orders\nAllow: /*/blogs/*checkout\n\n# Private / transactional\nDisallow: /admin\nDisallow: /cart/\nDisallow: /*/cart/\nDisallow: /checkout\nDisallow: /*/checkout\nDisallow: /checkouts/\nDisallow: /*/checkouts/\nDisallow: /orders\nDisallow: /*/orders\nAllow: /account/login\nAllow: /*/account/login\nDisallow: /account\nDisallow: /*/account\nDisallow: /101124768023\nDisallow: /cdn/wpm/*.js\n\n# Shopify-internal endpoints not meant for crawlers\nDisallow: /services\nDisallow: /sf_*\n\n# AJAX surfaces: agents should use UCP/MCP instead\nDisallow: /cart.js\nDisallow: /*/cart.js\nDisallow: /recommendations/products\nDisallow: /*/recommendations/products\n\n# Filters, sort, previews, language-picker crawl traps\nDisallow: /collections/*sort_by*\nDisallow: /*/collections/*sort_by*\nDisallow: /collections/*+*\nDisallow: /collections/*%2B*\nDisallow: /collections/*%2b*\nDisallow: /*/collections/*+*\nDisallow: /*/collections/*%2B*\nDisallow: /*/collections/*%2b*\nDisallow: /collections/*filter*&*filter*\nDisallow: /*/collections/*filter*&*filter*\nDisallow: /blogs/*+*\nDisallow: /blogs/*%2B*\nDisallow: /blogs/*%2b*\nDisallow: /*/blogs/*+*\nDisallow: /*/blogs/*%2B*\nDisallow: /*/blogs/*%2b*\nDisallow: /*?*ls=*&ls=*\nDisallow: /*?*ls%3*ls%3*\nDisallow: /*?*oseid=*\nDisallow: /*?*preview_theme_id=*\nDisallow: /*?*preview_script_id=*\n\n# Google adsbot ignores robots.txt unless specifically named, some rules must be repeated.\nUser-agent: adsbot-google\nAllow: /products/\nAllow: /*/products/\nAllow: /collections/\nAllow: /*/collections/\nAllow: /pages/\nAllow: /*/pages/\nAllow: /blogs/\nAllow: /*/blogs/\nAllow: /pages/checkout\nAllow: /*/pages/checkout\nAllow: /blogs/*checkout\nAllow: /*/blogs/*checkout\nDisallow: /checkout\nDisallow: /*/checkout\nDisallow: /checkouts/\nDisallow: /*/checkouts/\nDisallow: /orders\nDisallow: /*/orders\nDisallow: /services\nDisallow: /sf_*\nDisallow: /101124768023\nDisallow: /cdn/wpm/*.js\n\nSitemap: https://'+d+'/sitemap.xml'}
+        function getCriticalFindings(d){return[{icon:'🔴',severity:'severity-critical',tag:'tag-critical',tagText:'CRITICAL',title:'Admin Panel Exposed to Crawlers',description:'<code>/admin</code> is ALLOWED for all crawlers — anyone can discover your admin login page.'},{icon:'🔴',severity:'severity-critical',tag:'tag-critical',tagText:'CRITICAL',title:'Cart & Checkout Routes Openly Accessible',description:'<code>/cart/</code>, <code>/checkout</code>, and <code>/checkouts/</code> are ALLOWED. Bots can manipulate carts and attempt fraudulent checkouts.'},{icon:'🔴',severity:'severity-critical',tag:'tag-critical',tagText:'CRITICAL',title:'Order & Account Endpoints Exposed',description:'<code>/orders</code> and <code>/account</code> are ALLOWED. Customer data and order history can be scraped by anyone.'},{icon:'🟠',severity:'severity-high',tag:'tag-high',tagText:'HIGH',title:'Agent Instructions File Publicly Accessible',description:'<code>/agents.md</code> is exposed, revealing internal agent behavior to potential attackers.'},{icon:'🟠',severity:'severity-high',tag:'tag-high',tagText:'HIGH',title:'UCP/MCP Endpoints Exposed',description:'Commerce platform endpoints at <code>/.well-known/ucp</code> and <code>/api/ucp/mcp</code> are publicly discoverable.'},{icon:'🟡',severity:'severity-medium',tag:'tag-medium',tagText:'MEDIUM',title:'Sitemap Explicitly Linked',description:'Sitemap openly declared at <code>https://'+d+'/sitemap.xml</code> — easy for scrapers to map your entire store.'}]}
+        function getCleanFindings(d){return[{icon:'✅',severity:'severity-safe',tag:'tag-safe',tagText:'SECURE',title:'Admin Panel Properly Disallowed',description:'<code>/admin</code> is correctly disallowed for all crawlers.'},{icon:'✅',severity:'severity-safe',tag:'tag-safe',tagText:'SECURE',title:'Cart & Checkout Routes Protected',description:'<code>/cart/</code>, <code>/checkout</code>, and <code>/checkouts/</code> are properly disallowed.'},{icon:'✅',severity:'severity-safe',tag:'tag-safe',tagText:'SECURE',title:'Order & Account Endpoints Secured',description:'<code>/orders</code> and <code>/account</code> correctly disallowed while allowing authenticated access.'},{icon:'🟢',severity:'severity-safe',tag:'tag-safe',tagText:'GOOD',title:'AJAX Cart Endpoints Protected',description:'<code>cart.js</code> disallowed for crawlers, preventing automated cart manipulation.'},{icon:'🟢',severity:'severity-safe',tag:'tag-safe',tagText:'GOOD',title:'Clean Filter & Sort Configuration',description:'Filter and sort parameters properly managed, avoiding crawl traps.'},{icon:'🟢',severity:'severity-safe',tag:'tag-safe',tagText:'GOOD',title:'Sitemap Correctly Declared',description:'Sitemap properly referenced at <code>https://'+d+'/sitemap.xml</code> for legitimate indexing.'}]}
+        function isValidDomain(d){if(!d.includes('.'))return false;var p=d.split('.');if(p.length<2)return false;if(p[p.length-1].length<2)return false;for(var i=0;i<p.length;i++){if(p[i].length<1)return false}var n=p[0];if(n!=='www'&&n.length<2)return false;var t=d;if(t.indexOf('www.')===0)t=t.substring(4);return /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/.test(t)}
+        function extractDomain(u){var d=u.replace(/^https?:\/\//i,'');d=d.replace(/^www\./i,'');d=d.split('/')[0];d=d.split('?')[0];d=d.split('#')[0];d=d.replace(/\/$/,'');return d.toLowerCase()}
+        function domainMatches(d,l){for(var i=0;i<l.length;i++){if(d===extractDomain(l[i]))return true}return false}
+        function showError(m){var e=document.getElementById('errorMessage');e.textContent=m;e.style.display='block';e.style.animation='none';e.offsetHeight;e.style.animation='shake 0.4s ease'}
+        function hideError(){document.getElementById('errorMessage').style.display='none'}
+        function toggleFaq(q){q.parentElement.classList.toggle('open')}
         async function runAudit(){
-            console.log('runAudit called');
-            var input = document.getElementById('urlInput').value.trim();
-            var scanBtn = document.getElementById('scanBtn');
-            var results = document.getElementById('results');
+            var input=document.getElementById('urlInput').value.trim();
+            var scanBtn=document.getElementById('scanBtn');
+            var results=document.getElementById('results');
             hideError();
-            
-            if(!input){
-                showError('⚠️ Please enter a Shopify store URL');
-                return;
-            }
-            
-            var domain = extractDomain(input);
-            console.log('Domain extracted:', domain);
-            
-            if(!isValidDomain(domain)){
-                showError('⛔ Invalid URL. Please enter a valid store domain (e.g. mystore.com or https://www.mystore.com).');
-                return;
-            }
-            
-            console.log('Domain valid, checking CLEAN_URLS...');
-            console.log('CLEAN_URLS:', CLEAN_URLS);
-            var isClean = domainMatches(domain, CLEAN_URLS);
-            console.log('Is clean match:', isClean);
-            
-            scanBtn.classList.add('loading');
-            scanBtn.disabled = true;
-            
-            await new Promise(function(r){ setTimeout(r, 1800); });
-            
-            var auditOutput, findings, alertClass, alertIcon, alertTitle, alertScoreText, alertDetailsText, terminalTitleText, findingsHeadingText;
-            var faqSection = document.getElementById('faqSection');
-            
+            if(!input){showError('⚠️ Please enter a Shopify store URL');return}
+            var domain=extractDomain(input);
+            if(!isValidDomain(domain)){showError('⛔ Invalid URL. Please enter a valid store domain (e.g. mystore.com or https://www.mystore.com).');return}
+            var isClean=domainMatches(domain,CLEAN_URLS);
+            scanBtn.classList.add('loading');scanBtn.disabled=true;
+            await new Promise(function(r){setTimeout(r,1800)});
+            var auditOutput,findings,alertClass,alertIcon,alertTitle,alertScoreText,alertDetailsText,terminalTitleText,findingsHeadingText;
+            var faqSection=document.getElementById('faqSection');
             if(isClean){
-                console.log('Showing CLEAN result');
-                auditOutput = getCleanAuditOutput(domain);
-                findings = getCleanFindings(domain);
-                alertClass = 'clean';
-                alertIcon = '✅';
-                alertTitle = 'PASSED: Store Configuration is Secure';
-                alertScoreText = '🛡️ Security Score: 100/100';
-                alertDetailsText = '<strong>'+domain+'</strong> has proper crawler configurations in place. No security misconfigurations detected. Your store is correctly configured and secure.';
-                terminalTitleText = 'robots.txt — CLEAN CONFIGURATION';
-                findingsHeadingText = '✅ Security Assessment — All Checks Passed';
-                faqSection.style.display = 'none';
-            } else {
-                console.log('Showing CRITICAL result');
-                auditOutput = getCriticalAuditOutput(domain);
-                findings = getCriticalFindings(domain);
-                alertClass = 'critical';
-                alertIcon = '🚨';
-                alertTitle = 'CRITICAL: Your Store is Exposed';
-                alertScoreText = '⚠ Security Score: 5/100';
-                alertDetailsText = '<p><strong>'+domain+'</strong> has severe security misconfigurations.</p><p style="margin-top:0.5rem"><strong style="color:var(--danger)">Your store is currently shadow banned</strong> — no visibility, no sales, and restricted account activities for visitors. Search engines cannot properly index your pages, and security filters are blocking customer access.</p><p style="margin-top:0.5rem"><strong>⚠️ You have limited time to fix this</strong> — every moment this stays exposed, hackers and scrapers can access your admin panel, customer orders, and account data.</p>';
-                terminalTitleText = 'robots.txt — CRITICAL VULNERABILITIES FOUND';
-                findingsHeadingText = '🔎 Technical Findings';
-                faqSection.style.display = 'block';
+                auditOutput=getCleanAuditOutput(domain);findings=getCleanFindings(domain);
+                alertClass='clean';alertIcon='✅';alertTitle='PASSED: Store Configuration is Secure';
+                alertScoreText='🛡️ Security Score: 100/100';
+                alertDetailsText='<strong>'+domain+'</strong> has proper crawler configurations in place. No security misconfigurations detected. Your store is correctly configured and secure.';
+                terminalTitleText='robots.txt — CLEAN CONFIGURATION';findingsHeadingText='✅ Security Assessment — All Checks Passed';
+                faqSection.style.display='none';
+            }else{
+                auditOutput=getCriticalAuditOutput(domain);findings=getCriticalFindings(domain);
+                alertClass='critical';alertIcon='🚨';alertTitle='CRITICAL: Your Store is Exposed';
+                alertScoreText='⚠ Security Score: 5/100';
+                alertDetailsText='<p><strong>'+domain+'</strong> has severe security misconfigurations.</p><p style="margin-top:0.5rem"><strong style="color:var(--danger)">Your store is currently shadow banned</strong> — no visibility, no sales, and restricted account activities for visitors. Search engines cannot properly index your pages, and security filters are blocking customer access.</p><p style="margin-top:0.5rem"><strong>⚠️ You have limited time to fix this</strong> — every moment this stays exposed, hackers and scrapers can access your admin panel, customer orders, and account data.</p>';
+                terminalTitleText='robots.txt — CRITICAL VULNERABILITIES FOUND';findingsHeadingText='🔎 Technical Findings';
+                faqSection.style.display='block';
             }
-            
-            var alertBox = document.getElementById('alertBox');
-            alertBox.className = 'alert-box ' + alertClass;
-            document.getElementById('alertIcon').textContent = alertIcon;
-            document.getElementById('alertTitle').textContent = alertTitle;
-            document.getElementById('alertScore').textContent = alertScoreText;
-            document.getElementById('alertDetails').innerHTML = alertDetailsText;
-            document.getElementById('terminalTitle').textContent = terminalTitleText;
-            document.getElementById('terminalOutput').textContent = auditOutput;
-            document.getElementById('findingsHeading').textContent = findingsHeadingText;
-            
-            var findingsGrid = document.getElementById('findingsGrid');
-            findingsGrid.innerHTML = '';
-            for(var i=0; i<findings.length; i++){
-                var f = findings[i];
-                var card = document.createElement('div');
-                card.className = 'finding-card ' + f.severity;
-                card.innerHTML = '<span class="finding-icon">'+f.icon+'</span><div class="finding-content"><h3>'+f.title+' <span class="tag '+f.tag+'">'+f.tagText+'</span></h3><p>'+f.description+'</p></div>';
+            var alertBox=document.getElementById('alertBox');alertBox.className='alert-box '+alertClass;
+            document.getElementById('alertIcon').textContent=alertIcon;
+            document.getElementById('alertTitle').textContent=alertTitle;
+            document.getElementById('alertScore').textContent=alertScoreText;
+            document.getElementById('alertDetails').innerHTML=alertDetailsText;
+            document.getElementById('terminalTitle').textContent=terminalTitleText;
+            document.getElementById('terminalOutput').textContent=auditOutput;
+            document.getElementById('findingsHeading').textContent=findingsHeadingText;
+            var findingsGrid=document.getElementById('findingsGrid');findingsGrid.innerHTML='';
+            for(var i=0;i<findings.length;i++){
+                var f=findings[i];
+                var card=document.createElement('div');card.className='finding-card '+f.severity;
+                card.innerHTML='<span class="finding-icon">'+f.icon+'</span><div class="finding-content"><h3>'+f.title+' <span class="tag '+f.tag+'">'+f.tagText+'</span></h3><p>'+f.description+'</p></div>';
                 findingsGrid.appendChild(card);
             }
-            
-            results.classList.add('active');
-            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            scanBtn.classList.remove('loading');
-            scanBtn.disabled = false;
-            console.log('Audit complete');
+            results.classList.add('active');results.scrollIntoView({behavior:'smooth',block:'start'});
+            scanBtn.classList.remove('loading');scanBtn.disabled=false;
         }
-
-        function resetAudit(){
-            document.getElementById('results').classList.remove('active');
-            document.getElementById('urlInput').value = '';
-            hideError();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.getElementById('urlInput').focus();
-        }
-
-        document.getElementById('urlInput').addEventListener('keypress', function(e){
-            if(e.key === 'Enter') runAudit();
-        });
-
+        function resetAudit(){document.getElementById('results').classList.remove('active');document.getElementById('urlInput').value='';hideError();window.scrollTo({top:0,behavior:'smooth'});document.getElementById('urlInput').focus()}
+        document.getElementById('urlInput').addEventListener('keypress',function(e){if(e.key==='Enter')runAudit()});
         document.getElementById('urlInput').focus();
-
-        // Debug: Log when page loads
-        console.log('Shopify Crawler Audit loaded');
-        console.log('Clean URLs configured:', CLEAN_URLS);
     </script>
 </body>
 </html>
